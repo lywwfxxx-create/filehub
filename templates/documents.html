@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Документы - FileHub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-journal-text"></i> Мои документы</h2>
+    <a href="{{ url_for('create_document') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Создать документ
+    </a>
+</div>
+
+<div class="row">
+    {% for doc in documents %}
+    <div class="col-md-6 mb-4">
+        <div class="card card-hover h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ doc.title }}</h5>
+                {% if doc.category %}
+                <span class="badge bg-primary mb-2">{{ doc.category }}</span>
+                {% endif %}
+                {% if doc.tags %}
+                <p class="text-muted small">{{ doc.tags }}</p>
+                {% endif %}
+                <p class="card-text text-truncate">{{ doc.content[:150] }}...</p>
+                <p class="card-text"><small class="text-muted">Обновлен: {{ doc.updated_at.strftime('%d.%m.%Y %H:%M') }}</small></p>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{{ url_for('edit_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+                <form method="POST" action="{{ url_for('delete_document', doc_id=doc.id) }}" style="display:inline;" onsubmit="return confirm('Удалить документ?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i> Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            У вас нет созданных документов. <a href="{{ url_for('create_document') }}">Создать первый документ</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

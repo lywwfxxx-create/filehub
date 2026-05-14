@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Загрузка файла - FileHub{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Загрузка файла</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_file') }}">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Выберите файл</label>
+                        <input type="file" class="form-control" id="file" name="file" required>
+                        <div class="form-text">Допустимые форматы: txt, pdf, png, jpg, jpeg, gif, doc, docx, csv, xlsx (макс. 16MB)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_public" name="is_public" value="true">
+                        <label class="form-check-label" for="is_public">Сделать файл публичным</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Загрузить</button>
+                    <a href="{{ url_for('profile') }}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

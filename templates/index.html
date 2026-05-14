@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Главная - FileHub{% endblock %}
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold"><i class="bi bi-cloud-upload"></i> Добро пожаловать в FileHub</h1>
+        <p class="col-md-8 fs-4">Платформа для управления файлами и документами с REST API</p>
+        {% if not user %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Начать</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg">Войти</a>
+        {% else %}
+        <a href="{{ url_for('upload_file') }}" class="btn btn-primary btn-lg">Загрузить файл</a>
+        <a href="{{ url_for('create_document') }}" class="btn btn-success btn-lg">Создать документ</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3 card-hover">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-people"></i> Пользователи</h5>
+                <p class="card-text display-6">{{ users_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3 card-hover">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-files"></i> Файлов</h5>
+                <p class="card-text display-6">{{ files_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3 card-hover">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-gear"></i> API</h5>
+                <p class="card-text">REST API доступен</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if recent_files %}
+<div class="card">
+    <div class="card-header">
+        <h5><i class="bi bi-clock-history"></i> Последние файлы</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Файл</th>
+                        <th>Размер</th>
+                        <th>Дата</th>
+                        <th>Пользователь</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr>
+                        <td><i class="bi bi-file-earmark"></i> {{ file.original_filename }}</td>
+                        <td>{{ (file.file_size / 1024)|round(2) }} KB</td>
+                        <td>{{ file.uploaded_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                        <td>{{ file.owner.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

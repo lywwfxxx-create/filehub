@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{% if document %}Редактирование{% else %}Создание{% endif %} документа - FileHub{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-journal-plus"></i> 
+                    {% if document %}Редактирование документа{% else %}Создание документа{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Заголовок *</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ document.title if document else '' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Содержание *</label>
+                        <textarea class="form-control" id="content" name="content" rows="10" required>{{ document.content if document else '' }}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Категория</label>
+                            <input type="text" class="form-control" id="category" name="category" 
+                                   value="{{ document.category if document else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tags" class="form-label">Теги (через запятую)</label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="{{ document.tags if document else '' }}">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> {% if document %}Сохранить{% else %}Создать{% endif %}
+                    </button>
+                    <a href="{{ url_for('list_documents') }}" class="btn btn-secondary">Отмена</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

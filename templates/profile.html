@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Профиль - FileHub{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle display-1 text-primary"></i>
+                <h5 class="card-title mt-3">{{ user.username }}</h5>
+                <p class="text-muted">{{ user.email }}</p>
+                <p class="text-muted small">Регистрация: {{ user.created_at.strftime('%d.%m.%Y') }}</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Статистика</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Файлов:</span>
+                        <strong>{{ files|length }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Документов:</span>
+                        <strong>{{ documents|length }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Общий размер:</span>
+                        <strong>{{ (total_size / 1024 / 1024)|round(2) }} MB</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Мои файлы</h5>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-sm btn-primary">Загрузить</a>
+            </div>
+            <div class="card-body">
+                {% if files %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Файл</th>
+                                <th>Размер</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for file in files[:5] %}
+                            <tr>
+                                <td><i class="bi bi-file-earmark"></i> {{ file.original_filename }}</td>
+                                <td>{{ (file.file_size / 1024)|round(2) }} KB</td>
+                                <td>{{ file.uploaded_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('view_file', file_id=file.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет загруженных файлов</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Мои документы</h5>
+                <a href="{{ url_for('create_document') }}" class="btn btn-sm btn-success">Создать</a>
+            </div>
+            <div class="card-body">
+                {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Обновлен</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents[:5] %}
+                            <tr>
+                                <td>{{ doc.title }}</td>
+                                <td>{{ doc.category or '-' }}</td>
+                                <td>{{ doc.updated_at.strftime('%d.%m.%Y') }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет созданных документов</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
