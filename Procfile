@@ -1,2 +1,4 @@
-web: gunicorn app:app --log-file -
+web: python3.11 -m gunicorn app:app --log-file -
+
+
 
