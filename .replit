@@ -1,6 +1,0 @@
-language = "python3"
-
-run = "python app.py"
-
-[nix]
-channel = "stable-23_11"
