@@ -11,20 +11,24 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///site.db')
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_filename = os.environ.get('DATABASE_FILENAME', 'site.db')
+db_folder = os.environ.get('DATABASE_FOLDER', os.path.join(basedir, 'instance'))
+os.makedirs(db_folder, exist_ok=True)
+db_path = os.path.join(db_folder, db_filename)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = os.environ.get('UPLOAD_FOLDER', os.path.join(basedir, 'uploads'))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['DATA_FOLDER'] = 'data'
+app.config['DATA_FOLDER'] = os.environ.get('DATA_FOLDER', os.path.join(basedir, 'data'))
 
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 'csv', 'xlsx'}
 
 db = SQLAlchemy(app)
 
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-if not os.path.exists(app.config['DATA_FOLDER']):
-    os.makedirs(app.config['DATA_FOLDER'])
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -330,7 +334,8 @@ def upload_file():
                 return redirect(url_for('profile'))
             except Exception as e:
                 db.session.rollback()
-                os.remove(filepath)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
                 flash('Ошибка при сохранении файла', 'danger')
                 return redirect(request.url)
         else:
@@ -586,7 +591,8 @@ def api_upload_file():
         return jsonify({'message': 'Файл загружен', 'file': new_file.to_dict()}), 201
     except Exception as e:
         db.session.rollback()
-        os.remove(filepath)
+        if os.path.exists(filepath):
+            os.remove(filepath)
         return jsonify({'error': 'Ошибка сервера'}), 500
 
 @app.route('/api/documents', methods=['GET'])
@@ -650,6 +656,4 @@ def internal_error(error):
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    host = os.environ.get('REPL_HOST', '0.0.0.0')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host=host, port=port, debug=True)
+    host = os.environ.get('HOST', '0.0.0.0')
