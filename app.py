@@ -62,8 +62,8 @@ class User(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
-    files = db.relationship('File', backref='owner', lazy=True, cascade='all, delete-orphan')
-    documents = db.relationship('Document', backref='owner', lazy=True, cascade='all, delete-orphan')
+    files = db.relationship('File', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    documents = db.relationship('Document', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -311,8 +311,8 @@ def logout():
 @login_required
 def profile():
     user = get_current_user()
-    user_files = user.files.order_by(File.uploaded_at.desc()).all()
-    user_documents = user.documents.order_by(Document.updated_at.desc()).all()
+    user_files = File.query.filter_by(user_id=user.id).order_by(File.uploaded_at.desc()).all()
+    user_documents = Document.query.filter_by(user_id=user.id).order_by(Document.updated_at.desc()).all()
     total_size = sum(f.file_size for f in user_files)
     return render_template('profile.html', user=user, files=user_files,
                          documents=user_documents, total_size=total_size)
@@ -376,7 +376,7 @@ def upload_file():
 @login_required
 def list_files():
     user = get_current_user()
-    user_files = user.files.order_by(File.uploaded_at.desc()).all()
+    user_files = File.query.filter_by(user_id=user.id).order_by(File.uploaded_at.desc()).all()
     public_files = File.query.filter_by(is_public=True).order_by(File.uploaded_at.desc()).limit(20).all()
     return render_template('files.html', user=user, user_files=user_files, public_files=public_files)
 
@@ -418,7 +418,7 @@ def delete_file(file_id):
 @login_required
 def list_documents():
     user = get_current_user()
-    documents = user.documents.order_by(Document.updated_at.desc()).all()
+    documents = Document.query.filter_by(user_id=user.id).order_by(Document.updated_at.desc()).all()
     return render_template('documents.html', user=user, documents=documents)
 
 
@@ -556,23 +556,25 @@ def api_login():
 @login_required
 def api_get_files():
     user = get_current_user()
-    return jsonify([f.to_dict() for f in user.files.all()])
+    files = File.query.filter_by(user_id=user.id).all()
+    return jsonify([f.to_dict() for f in files])
 
 
 @app.route('/api/documents', methods=['GET'])
 @login_required
 def api_get_documents():
     user = get_current_user()
-    return jsonify([doc.to_dict() for doc in user.documents.all()])
+    documents = Document.query.filter_by(user_id=user.id).all()
+    return jsonify([doc.to_dict() for doc in documents])
 
 
 @app.route('/api/statistics', methods=['GET'])
 @login_required
 def api_statistics():
     user = get_current_user()
-    files_count = user.files.count()
-    documents_count = user.documents.count()
-    total_size = sum(f.file_size for f in user.files.all())
+    files_count = File.query.filter_by(user_id=user.id).count()
+    documents_count = Document.query.filter_by(user_id=user.id).count()
+    total_size = db.session.query(db.func.sum(File.file_size)).filter_by(user_id=user.id).scalar() or 0
     return jsonify({
         'files_count': files_count,
         'documents_count': documents_count,
