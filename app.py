@@ -53,9 +53,6 @@ db = SQLAlchemy(app)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['DATA_FOLDER'], exist_ok=True)
 
-with app.app_context():
-    db.create_all()
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -584,6 +581,13 @@ def api_statistics():
     })
 
 
+@app.route('/init-db')
+def init_db():
+    with app.app_context():
+        db.create_all()
+    return 'Database tables created', 200
+
+
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('404.html'), 404
@@ -596,6 +600,8 @@ def internal_error(error):
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     host = os.environ.get('HOST', '0.0.0.0')
     port = int(os.environ.get('PORT', 5000))
     app.run(host=host, port=port, debug=False)
