@@ -20,14 +20,15 @@ database_url = os.environ.get('DATABASE_URL')
 if database_url:
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    if database_url.startswith('postgresql://') and '+psycopg' not in database_url:
+        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     if 'sslmode' not in database_url:
         separator = '&' if '?' in database_url else '?'
         database_url += f'{separator}sslmode=require'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
-        'pool_recycle': 300,
-        'connect_args': {'sslmode': 'require'}
+        'pool_recycle': 300
     }
 else:
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -590,13 +591,8 @@ def internal_error(error):
     db.session.rollback()
     return render_template('500.html'), 500
 
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    host = os.environ.get('HOST', '0.0.0.0')
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host=host, port=port, debug=False)
-
-
-
-
+    host = os.environ.get('HOST', '0.0.
