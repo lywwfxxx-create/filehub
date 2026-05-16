@@ -583,9 +583,8 @@ def api_statistics():
 
 @app.route('/init-db')
 def init_db():
-    with app.app_context():
-        db.create_all()
-    return 'Database tables created', 200
+    db.create_all()
+    return 'Database initialized', 200
 
 
 @app.errorhandler(404)
@@ -599,9 +598,11 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 
+with app.app_context():
+    db.create_all()
+
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     host = os.environ.get('HOST', '0.0.0.0')
     port = int(os.environ.get('PORT', 5000))
     app.run(host=host, port=port, debug=False)
